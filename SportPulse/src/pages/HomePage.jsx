@@ -1,3 +1,4 @@
+import { Flame, CalendarDays, CheckCircle2 } from "lucide-react";
 import MatchCard from "../components/MatchCard";
 
 const FAKE_MATCHES = [
@@ -81,20 +82,72 @@ const COMPETITION_LABELS = {
   SA: "Serie A",
   CL: "Champions League",
 };
-
 const COMPETITION_ORDER = ["SA", "FL1", "PL", "PD", "BL1", "CL"];
 
-export default function HomePage() {
-  const liveCount = FAKE_MATCHES.filter((m) => m.status === "IN_PLAY").length;
+const STATS = [
+  {
+    icon: CalendarDays,
+    label: "À venir",
+    value: FAKE_MATCHES.filter((m) => m.status === "SCHEDULED").length,
+    color: "text-blue-400",
+    bg: "bg-blue-500/10",
+    border: "border-blue-500/20",
+  },
+  {
+    icon: Flame,
+    label: "En direct",
+    value: FAKE_MATCHES.filter((m) => m.status === "IN_PLAY").length,
+    color: "text-green-400",
+    bg: "bg-green-500/10",
+    border: "border-green-500/20",
+  },
+  {
+    icon: CheckCircle2,
+    label: "Terminés",
+    value: FAKE_MATCHES.filter((m) => m.status === "FINISHED").length,
+    color: "text-zinc-400",
+    bg: "bg-zinc-500/10",
+    border: "border-zinc-500/20",
+  },
+];
 
-  // grouper par compétition
-  const grouped = FAKE_MATCHES.reduce((acc, match) => {
-    if (!acc[match.competition]) acc[match.competition] = [];
-    acc[match.competition].push(match);
+const DARK_STATS = [
+  {
+    icon: CalendarDays,
+    label: "À venir",
+    value: FAKE_MATCHES.filter((m) => m.status === "SCHEDULED").length,
+    color: "text-blue-400",
+    bg: "bg-blue-500/10",
+    border: "border-blue-500/20",
+  },
+  {
+    icon: Flame,
+    label: "En direct",
+    value: FAKE_MATCHES.filter((m) => m.status === "IN_PLAY").length,
+    color: "text-green-400",
+    bg: "bg-green-500/10",
+    border: "border-green-500/20",
+  },
+  {
+    icon: CheckCircle2,
+    label: "Terminés",
+    value: FAKE_MATCHES.filter((m) => m.status === "FINISHED").length,
+    color: "text-zinc-500",
+    bg: "bg-zinc-500/10",
+    border: "border-zinc-700/40",
+  },
+];
+
+export default function HomePage({ dark }) {
+  const liveMatches = FAKE_MATCHES.filter((m) => m.status === "IN_PLAY");
+  const stats = dark ? DARK_STATS : STATS;
+
+  const grouped = FAKE_MATCHES.reduce((acc, m) => {
+    if (!acc[m.competition]) acc[m.competition] = [];
+    acc[m.competition].push(m);
     return acc;
   }, {});
 
-  // ordre : live en premier, puis ordre défini
   const sortedComps = Object.keys(grouped).sort((a, b) => {
     const liveA = grouped[a].some((m) => m.status === "IN_PLAY") ? -1 : 0;
     const liveB = grouped[b].some((m) => m.status === "IN_PLAY") ? -1 : 0;
@@ -102,82 +155,116 @@ export default function HomePage() {
     return COMPETITION_ORDER.indexOf(a) - COMPETITION_ORDER.indexOf(b);
   });
 
+  let cardIndex = 0;
+
   return (
-    <main className="max-w-3xl mx-auto px-6 py-10">
-      {/* header */}
-      <div className="mb-8">
+    <main className="max-w-4xl mx-auto px-6 py-12">
+      
+      <div className="mb-10 fade-up fade-up-1">
         <p
-          className="text-xs font-semibold text-green-500 uppercase tracking-widest mb-2"
+          className="text-xs font-bold text-green-500 uppercase tracking-[0.2em] mb-3"
           style={{ fontFamily: "Syne, sans-serif" }}
         >
           7 prochains jours
         </p>
         <h1
-          className="text-4xl font-extrabold text-zinc-900 dark:text-white"
+          className={`text-5xl font-black tracking-tight leading-none mb-1 ${
+            dark ? "text-white" : "text-zinc-900"
+          }`}
           style={{ fontFamily: "Syne, sans-serif" }}
         >
           Matchs
         </h1>
+        <p
+          className={`text-sm mt-2 ${dark ? "text-zinc-500" : "text-zinc-400"}`}
+        >
+          {FAKE_MATCHES.length} rencontres · toutes compétitions
+        </p>
       </div>
 
-      {/* banner live */}
-      {liveCount > 0 && (
-        <div className="mb-8 flex items-center gap-3 px-4 py-3 bg-green-500/10 border border-green-500/20 rounded-xl">
-          <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse shrink-0" />
-          <p className="text-sm font-medium text-green-600 dark:text-green-400">
-            {liveCount} match{liveCount > 1 ? "s" : ""} en direct
-          </p>
-        </div>
-      )}
-
-      {/* stats rapides */}
-      <div className="grid grid-cols-3 gap-3 mb-10">
-        {[
-          {
-            label: "Matchs à venir",
-            value: FAKE_MATCHES.filter((m) => m.status === "SCHEDULED").length,
-          },
-          { label: "En direct", value: liveCount },
-          {
-            label: "Terminés",
-            value: FAKE_MATCHES.filter((m) => m.status === "FINISHED").length,
-          },
-        ].map(({ label, value }) => (
+      
+      <div className="grid grid-cols-3 gap-3 mb-10 fade-up fade-up-2">
+        {stats.map(({ icon: Icon, label, value, color, bg, border }) => (
           <div
             key={label}
-            className="bg-white dark:bg-zinc-900 border border-zinc-100 dark:border-zinc-800 rounded-2xl px-4 py-3 text-center"
+            className={`rounded-2xl p-4 border ${bg} ${border} ${
+              dark ? "" : "bg-white/80 shadow-sm"
+            }`}
           >
+            <div className="flex items-center gap-2 mb-2">
+              <Icon size={14} className={color} />
+              <span
+                className={`text-xs font-medium ${dark ? "text-zinc-500" : "text-zinc-400"}`}
+              >
+                {label}
+              </span>
+            </div>
             <p
-              className="text-2xl font-black text-zinc-900 dark:text-white"
+              className={`text-3xl font-black ${dark ? "text-white" : "text-zinc-900"}`}
               style={{ fontFamily: "Syne, sans-serif" }}
             >
               {value}
-            </p>
-            <p className="text-xs text-zinc-400 dark:text-zinc-500 mt-0.5">
-              {label}
             </p>
           </div>
         ))}
       </div>
 
-      {/* matchs groupés par compétition */}
+
+      {liveMatches.length > 0 && (
+        <div
+          className={`mb-8 flex items-center gap-3 px-5 py-3.5 rounded-2xl border border-green-500/20 bg-green-500/8 fade-up fade-up-3`}
+        >
+          <div className="relative shrink-0">
+            <span className="w-2 h-2 rounded-full bg-green-500 block" />
+            <span className="absolute inset-0 rounded-full bg-green-500 animate-ping opacity-60" />
+          </div>
+          <p
+            className={`text-sm font-semibold ${dark ? "text-green-400" : "text-green-600"}`}
+          >
+            {liveMatches.length} match{liveMatches.length > 1 ? "s" : ""} en
+            direct maintenant
+          </p>
+          <span className="ml-auto text-xs text-green-500/60 font-medium">
+            {liveMatches
+              .map((m) => `${m.home_team} — ${m.away_team}`)
+              .join(" · ")}
+          </span>
+        </div>
+      )}
+
+      
       <div className="space-y-8">
         {sortedComps.map((comp) => (
           <section key={comp}>
-            <div className="flex items-center gap-2 mb-3">
-              <h2 className="text-xs font-semibold text-zinc-400 dark:text-zinc-500 uppercase tracking-widest">
+            
+            <div className="flex items-center gap-3 mb-3">
+              <span
+                className={`text-[11px] font-bold uppercase tracking-[0.15em] ${
+                  dark ? "text-zinc-600" : "text-zinc-400"
+                }`}
+                style={{ fontFamily: "Syne, sans-serif" }}
+              >
                 {COMPETITION_LABELS[comp] ?? comp}
-              </h2>
+              </span>
               {grouped[comp].some((m) => m.status === "IN_PLAY") && (
-                <span className="text-xs font-semibold text-green-500 flex items-center gap-1">
-                  <span className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
+                <span className="flex items-center gap-1 text-[10px] font-bold text-green-500 uppercase tracking-wider">
+                  <span className="w-1 h-1 rounded-full bg-green-500 animate-pulse" />
                   Live
                 </span>
               )}
+              <div
+                className={`flex-1 h-px ${dark ? "bg-white/5" : "bg-zinc-200"}`}
+              />
             </div>
+
             <div className="space-y-2">
               {grouped[comp].map((match) => (
-                <MatchCard key={match.id} match={match} />
+                <MatchCard
+                  key={match.id}
+                  match={match}
+                  dark={dark}
+                  index={cardIndex++}
+                />
               ))}
             </div>
           </section>

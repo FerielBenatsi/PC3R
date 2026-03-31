@@ -1,70 +1,99 @@
 import { Link, NavLink } from "react-router-dom";
-import { Sun, Moon } from "lucide-react";
+import { Sun, Moon, Trophy, Zap } from "lucide-react";
 
 export default function NavBar({ dark, toggleDark }) {
   return (
-    <header className="sticky top-0 z-50 border-b border-zinc-200 dark:border-zinc-800/80 bg-zinc-50/90 dark:bg-zinc-950/90 backdrop-blur-md">
-      <div className="max-w-3xl mx-auto px-6 h-16 flex items-center justify-between">
-        {/*Logo*/}
-        <Link to="/" className="flex items-center gap-2 group">
-          <div className="w-7 h-7 rounded-lg bg-green-500 flex items-center justify-center ">
-            <span className="text-white text-xs font-black">SP</span>
-          </div>
+    <header className="sticky top-0 z-50">
+      <div
+        className={`border-b transition-colors duration-500 ${
+          dark
+            ? "bg-[#080a0f]/80 border-white/5 backdrop-blur-2xl"
+            : "bg-white/70 border-black/5 backdrop-blur-2xl shadow-sm"
+        }`}
+      >
+        <div className="max-w-4xl mx-auto px-6 h-16 flex items-center justify-between">
+          {/* logo */}
+          <Link to="/" className="flex items-center gap-2.5 group">
+            <div className="relative w-8 h-8 flex items-center justify-center">
+              <div className="absolute inset-0 rounded-xl bg-green-500 opacity-20 group-hover:opacity-30 blur-sm transition-opacity" />
+              <div className="relative w-8 h-8 rounded-xl bg-linear-to-br from-green-400 to-emerald-600 flex items-center justify-center shadow-lg">
+                <Zap size={14} className="text-white fill-white" />
+              </div>
+            </div>
+            <span
+              className="text-[17px] font-black tracking-tight"
+              style={{ fontFamily: "Syne, sans-serif" }}
+            >
+              <span className={dark ? "text-white" : "text-zinc-900"}>
+                Sport
+              </span>
+              <span className="text-green-500">Pulse</span>
+            </span>
+          </Link>
 
-          <span
-            className="text-lg font-extrabold tracking-tight text-zinc-900 dark:text-white"
-            style={{ fontFamily: "Syne, sans-serif" }}
-          >
-            Sport<span className="text-green-500">Pulse</span>
-          </span>
-        </Link>
+          {/* centre nav */}
+          <nav className="flex items-center gap-1">
+            <NavLink
+              to="/"
+              className={({ isActive }) =>
+                `flex items-center gap-1.5 text-sm px-3.5 py-2 rounded-xl font-medium transition-all duration-150 ${
+                  isActive
+                    ? dark
+                      ? "text-white bg-white/8"
+                      : "text-zinc-900 bg-zinc-100"
+                    : dark
+                      ? "text-zinc-500 hover:text-zinc-200 hover:bg-white/5"
+                      : "text-zinc-400 hover:text-zinc-700 hover:bg-zinc-100"
+                }`
+              }
+            >
+              Matchs
+            </NavLink>
 
-        {/*Navigation Links*/}
+            <NavLink
+              to="/leaderboard"
+              className={({ isActive }) =>
+                `flex items-center gap-1.5 text-sm px-3.5 py-2 rounded-xl font-medium transition-all duration-150 ${
+                  isActive
+                    ? dark
+                      ? "text-white bg-white/8"
+                      : "text-zinc-900 bg-zinc-100"
+                    : dark
+                      ? "text-zinc-500 hover:text-zinc-200 hover:bg-white/5"
+                      : "text-zinc-400 hover:text-zinc-700 hover:bg-zinc-100"
+                }`
+              }
+            >
+              <Trophy size={13} />
+              Classement
+            </NavLink>
+          </nav>
 
-        <div>
-          <NavLink
-            to = "/" className=
-            {({ isActive }) =>
-              `text-sm px-3 py-1.5 rounded-lg transition-colors duration-150 font-medium ${
-                isActive
-                  ? "text-zinc-900 dark:text-white bg-zinc-100 dark:bg-zinc-800"
-                  : "text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white hover:bg-zinc-100 dark:hover:bg-zinc-800/60"
-              }`
-            }>
-                Matchs
-          </NavLink>
-
-           <NavLink
-            to="/leaderboard"
-            className={({ isActive }) =>
-              `text-sm px-3 py-1.5 rounded-lg transition-colors duration-150 font-medium ${
-                isActive
-                  ? 'text-zinc-900 dark:text-white bg-zinc-100 dark:bg-zinc-800'
-                  : 'text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white hover:bg-zinc-100 dark:hover:bg-zinc-800/60'
-              }`
-            }
-          >
-            Classement
-          </NavLink>
-
-           <div className="w-px h-4 bg-zinc-200 dark:bg-zinc-700 mx-2" />
-
-           {/* dark mode toggle*/}
-
-
+          {/* droite */}
+          <div className="flex items-center gap-2">
             <button
-                onClick={toggleDark}
-                 className="w-8 h-8 flex items-center justify-center rounded-lg text-zinc-400 dark:text-zinc-500 hover:text-zinc-900 dark:hover:text-white hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-all duration-150"
-            aria-label="Toggle dark mode">
-                 {dark ? <Sun size={16} /> : <Moon size={16} />}
+              onClick={toggleDark}
+              className={`w-9 h-9 flex items-center justify-center rounded-xl transition-all duration-150 ${
+                dark
+                  ? "text-zinc-500 hover:text-yellow-400 hover:bg-white/5"
+                  : "text-zinc-400 hover:text-zinc-700 hover:bg-zinc-100"
+              }`}
+            >
+              {dark ? <Sun size={15} /> : <Moon size={15} />}
             </button>
 
+            <div
+              className={`w-px h-5 ${dark ? "bg-white/8" : "bg-zinc-200"}`}
+            />
 
-            {/*connexion*/}
-            <Link to="/login" className="ml-1 text-sm px-4 py-1.5 bg-zinc-900 dark:bg-white text-white dark:text-zinc-900 rounded-lg font-medium hover:opacity-80 transition-opacity duration-150">
+            <Link
+              to="/login"
+              className="text-sm px-4 py-2 rounded-xl font-semibold bg-green-500 hover:bg-green-400 text-white transition-all duration-150 shadow-lg shadow-green-500/20"
+              style={{ fontFamily: "Syne, sans-serif" }}
+            >
               Connexion
             </Link>
-
+          </div>
         </div>
       </div>
     </header>
