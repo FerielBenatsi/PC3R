@@ -2,7 +2,8 @@ import { useState, useEffect } from "react";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import NavBar from "./components/NavBar";
 import HomePage from "./pages/HomePage";
-
+import LoginPage from "./pages/LoginPage";
+import RegisterPage from "./pages/RegisterPage";
 export default function App() {
   const [dark, setDark] = useState(true);
 
@@ -19,7 +20,6 @@ export default function App() {
             : "bg-linear-to-br from-slate-100 via-zinc-50 to-slate-200"
         }`}
       >
-     
         {dark && (
           <div className="fixed inset-0 overflow-hidden pointer-events-none">
             <div className="absolute -top-40 -left-40 w-150 h-150 rounded-full bg-green-500/5 blur-[120px]" />
@@ -32,6 +32,9 @@ export default function App() {
 
         <Routes>
           <Route path="/" element={<HomePage dark={dark} />} />
+
+          <Route path="/login" element={<LoginPage dark={dark} />} />
+          <Route path="/register" element={<RegisterPage dark={dark} />} />
         </Routes>
       </div>
     </BrowserRouter>
