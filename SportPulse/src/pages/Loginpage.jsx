@@ -1,6 +1,7 @@
 import { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 import { Mail, Lock, Eye, EyeOff, Zap, ArrowRight } from "lucide-react";
+import { useAuth } from "../context/useAuth";
 
 export default function LoginPage({ dark }) {
   const [email, setEmail] = useState("");
@@ -9,10 +10,15 @@ export default function LoginPage({ dark }) {
   const [erreurs, setErreurs] = useState({});
   const [loading, setLoading] = useState(false);
 
+  const { login } = useAuth();
+  const navigate = useNavigate();
+  const location = useLocation();
+  const from = location.state?.from?.pathname || "/";
+
   function valider() {
     const errs = {};
     if (!email.trim()) errs.email = "Email requis";
-    else if (!email.includes("@")) errs.email = "Email invalide";
+      else if (!email.includes("@")) errs.email = "Email invalide";
     if (!password) errs.password = "Mot de passe requis";
     return errs;
   }
@@ -24,8 +30,14 @@ export default function LoginPage({ dark }) {
       return;
     }
     setLoading(true);
-    // fetch à brancher plus tard
-    setTimeout(() => setLoading(false), 1500);
+    try {
+      await login(email, password);
+      navigate(from, { replace: true });
+    } catch (e) {
+      setErreurs({ global: e.message || "Identifiants incorrects" });
+    } finally {
+      setLoading(false);
+    }
   }
 
   const inputBase = `w-full text-sm rounded-xl px-4 py-3 pl-10 outline-none transition-all duration-150 ${
@@ -33,7 +45,6 @@ export default function LoginPage({ dark }) {
       ? "bg-white/5 border border-white/8 text-white placeholder-zinc-600 focus:border-green-500/50 focus:bg-white/8"
       : "bg-white border border-zinc-200 text-zinc-900 placeholder-zinc-400 focus:border-green-400 focus:ring-2 focus:ring-green-400/10"
   }`;
-
   const iconColor = dark ? "text-zinc-600" : "text-zinc-400";
 
   return (
@@ -53,17 +64,19 @@ export default function LoginPage({ dark }) {
           >
             Connexion
           </h1>
-          <p
-            className={`text-sm mt-1 ${dark ? "text-zinc-500" : "text-zinc-400"}`}
-          >
+          <p className={`text-sm mt-1 ${dark ? "text-zinc-500" : "text-zinc-400"}`}>
             Bon retour sur SportPulse
           </p>
         </div>
 
-        {/* carte formulaire */}
-        <div
-          className={`rounded-2xl p-6 ${dark ? "glass" : "bg-white shadow-xl shadow-zinc-200/80 border border-zinc-100"}`}
-        >
+        <div className={`rounded-2xl p-6 ${dark ? "glass" : "bg-white shadow-xl shadow-zinc-200/80 border border-zinc-100"}`}>
+          {/* erreur globale */}
+          {erreurs.global && (
+            <div className="mb-4 px-4 py-2.5 rounded-xl bg-red-500/10 border border-red-500/20">
+              <p className="text-xs text-red-400">{erreurs.global}</p>
+            </div>
+          )}
+
           {/* champ email */}
           <div className="mb-4">
             <label
@@ -73,27 +86,17 @@ export default function LoginPage({ dark }) {
               Email
             </label>
             <div className="relative">
-              <Mail
-                size={14}
-                className={`absolute left-3.5 top-1/2 -translate-y-1/2 ${iconColor}`}
-              />
+              <Mail size={14} className={`absolute left-3.5 top-1/2 -translate-y-1/2 ${iconColor}`} />
               <input
                 type="email"
-                placeholder="ferielbenasti@gmail.com"
+                placeholder="email@gmail.com"
                 autoComplete="off"
                 value={email}
-                onChange={(e) => {
-                  setEmail(e.target.value);
-                  setErreurs((p) => ({ ...p, email: null }));
-                }}
+                onChange={(e) => { setEmail(e.target.value); setErreurs((p) => ({ ...p, email: null })); }}
                 className={`${inputBase} ${erreurs.email ? "border-red-500/50" : ""}`}
               />
             </div>
-            {erreurs.email && (
-              <p className="text-xs text-red-400 mt-1.5 fade-up fade-up-1">
-                {erreurs.email}
-              </p>
-            )}
+            {erreurs.email && <p className="text-xs text-red-400 mt-1.5">{erreurs.email}</p>}
           </div>
 
           {/* champ password */}
@@ -105,19 +108,13 @@ export default function LoginPage({ dark }) {
               Mot de passe
             </label>
             <div className="relative">
-              <Lock
-                size={14}
-                className={`absolute left-3.5 top-1/2 -translate-y-1/2 ${iconColor}`}
-              />
+              <Lock size={14} className={`absolute left-3.5 top-1/2 -translate-y-1/2 ${iconColor}`} />
               <input
                 type={showPwd ? "text" : "password"}
                 placeholder="••••••••"
                 autoComplete="off"
                 value={password}
-                onChange={(e) => {
-                  setPassword(e.target.value);
-                  setErreurs((p) => ({ ...p, password: null }));
-                }}
+                onChange={(e) => { setPassword(e.target.value); setErreurs((p) => ({ ...p, password: null })); }}
                 className={`${inputBase} pr-10 ${erreurs.password ? "border-red-500/50" : ""}`}
               />
               <button
@@ -128,14 +125,9 @@ export default function LoginPage({ dark }) {
                 {showPwd ? <EyeOff size={14} /> : <Eye size={14} />}
               </button>
             </div>
-            {erreurs.password && (
-              <p className="text-xs text-red-400 mt-1.5 fade-up fade-up-1">
-                {erreurs.password}
-              </p>
-            )}
+            {erreurs.password && <p className="text-xs text-red-400 mt-1.5">{erreurs.password}</p>}
           </div>
 
-          {/* bouton submit */}
           <button
             onClick={handleSubmit}
             disabled={loading}
@@ -145,23 +137,14 @@ export default function LoginPage({ dark }) {
             {loading ? (
               <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
             ) : (
-              <>
-                Se connecter
-                <ArrowRight size={14} />
-              </>
+              <>Se connecter <ArrowRight size={14} /></>
             )}
           </button>
         </div>
 
-        {/* lien register */}
-        <p
-          className={`text-center text-sm mt-5 ${dark ? "text-zinc-600" : "text-zinc-400"}`}
-        >
+        <p className={`text-center text-sm mt-5 ${dark ? "text-zinc-600" : "text-zinc-400"}`}>
           Pas encore de compte ?{" "}
-          <Link
-            to="/register"
-            className="text-green-500 font-semibold hover:text-green-400 transition-colors"
-          >
+          <Link to="/register" className="text-green-500 font-semibold hover:text-green-400 transition-colors">
             S'inscrire
           </Link>
         </p>

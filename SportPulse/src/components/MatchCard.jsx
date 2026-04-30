@@ -42,15 +42,25 @@ function TeamBadge({ name, dark }) {
   );
 }
 
+// ✅ parse correctement le format "2026-05-01 20:45:00" du backend
+function parseDate(dateStr) {
+  if (!dateStr) return new Date();
+  // si déjà au format ISO avec T, on laisse tel quel
+  if (dateStr.includes("T")) return new Date(dateStr);
+  // sinon on convertit "2026-05-01 20:45:00" → "2026-05-01T20:45:00Z"
+  return new Date(dateStr.replace(" ", "T") + "Z");
+}
+
 function formatDate(dateStr) {
-  return new Date(dateStr).toLocaleDateString("fr-FR", {
+  return parseDate(dateStr).toLocaleDateString("fr-FR", {
     weekday: "short",
     day: "numeric",
     month: "short",
   });
 }
+
 function formatTime(dateStr) {
-  return new Date(dateStr).toLocaleTimeString("fr-FR", {
+  return parseDate(dateStr).toLocaleTimeString("fr-FR", {
     hour: "2-digit",
     minute: "2-digit",
   });
@@ -66,9 +76,11 @@ export default function MatchCard({ match, dark, index = 0 }) {
     home_score,
     away_score,
   } = match;
+
   const isFinished = status === "FINISHED";
   const isLive = status === "IN_PLAY";
-  const isScheduled = status === "SCHEDULED";
+  // ✅ TIMED = matchs programmés côté football-data.org
+  const isScheduled = status === "SCHEDULED" || status === "TIMED";
 
   return (
     <Link
@@ -80,18 +92,15 @@ export default function MatchCard({ match, dark, index = 0 }) {
           dark ? "glass" : "glass-light shadow-sm"
         } ${isLive ? "border-green-500/30" : ""}`}
       >
-       
         {isLive && (
           <div className="absolute left-0 top-4 bottom-4 w-0.75 bg-linear-to-b from-green-400 to-emerald-600 rounded-full" />
         )}
-
-        
         {isLive && (
           <div className="absolute inset-0 bg-green-500/3 rounded-2xl pointer-events-none" />
         )}
 
         <div className="flex items-center gap-3 pl-1">
-        
+          {/* équipe domicile */}
           <div className="flex items-center gap-2.5 flex-1 min-w-0">
             <TeamBadge name={home_team} dark={dark} />
             <span
@@ -104,7 +113,7 @@ export default function MatchCard({ match, dark, index = 0 }) {
             </span>
           </div>
 
-          
+          {/* centre — heure ou score */}
           <div className="flex flex-col items-center gap-0.5 shrink-0 px-2">
             {isScheduled ? (
               <div className="flex flex-col items-center">
@@ -190,7 +199,7 @@ export default function MatchCard({ match, dark, index = 0 }) {
             )}
           </div>
 
-        
+          {/* équipe extérieure */}
           <div className="flex items-center gap-2.5 flex-1 min-w-0 justify-end">
             <span
               className={`text-sm font-semibold truncate text-right ${
@@ -202,14 +211,6 @@ export default function MatchCard({ match, dark, index = 0 }) {
             </span>
             <TeamBadge name={away_team} dark={dark} />
           </div>
-        </div>
-
-        
-        <div className="absolute right-3 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-all duration-150 group-hover:translate-x-0.5">
-          <ChevronRight
-            size={14}
-            className={dark ? "text-zinc-500" : "text-zinc-400"}
-          />
         </div>
       </div>
     </Link>
