@@ -1,5 +1,12 @@
 import { useState, useEffect } from "react";
-import { Flame, CalendarDays, CheckCircle2, AlertCircle } from "lucide-react";
+import {
+  Flame,
+  CalendarDays,
+  CheckCircle2,
+  AlertCircle,
+  Search,
+  X,
+} from "lucide-react";
 import MatchCard from "../components/MatchCard";
 import { apiFetch } from "../services/api";
 
@@ -17,6 +24,7 @@ export default function HomePage({ dark }) {
   const [matches, setMatches] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [search, setSearch] = useState("");
 
   useEffect(() => {
     async function fetchMatches() {
@@ -35,7 +43,21 @@ export default function HomePage({ dark }) {
     fetchMatches();
   }, []);
 
-  const liveMatches = matches.filter((m) => m.status === "IN_PLAY");
+  // ✅ Filtre par nom d'équipe (insensible à la casse et aux accents)
+  const normalize = (str) =>
+    str
+      .toLowerCase()
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "");
+  const filtered = search.trim()
+    ? matches.filter(
+        (m) =>
+          normalize(m.home_team).includes(normalize(search)) ||
+          normalize(m.away_team).includes(normalize(search)),
+      )
+    : matches;
+
+  const liveMatches = filtered.filter((m) => m.status === "IN_PLAY");
   const stats = [
     {
       icon: CalendarDays,
@@ -50,10 +72,10 @@ export default function HomePage({ dark }) {
     {
       icon: Flame,
       label: "En direct",
-      value: liveMatches.length,
-      color: "text-green-400",
-      bg: "bg-green-500/10",
-      border: "border-green-500/20",
+      value: matches.filter((m) => m.status === "IN_PLAY").length,
+      color: "text-blue-400",
+      bg: "bg-blue-500/10",
+      border: "border-blue-500/20",
     },
     {
       icon: CheckCircle2,
@@ -65,7 +87,7 @@ export default function HomePage({ dark }) {
     },
   ];
 
-  const grouped = matches.reduce((acc, m) => {
+  const grouped = filtered.reduce((acc, m) => {
     const comp = m.competition ?? m.competition_code ?? "?";
     if (!acc[comp]) acc[comp] = [];
     acc[comp].push(m);
@@ -85,14 +107,14 @@ export default function HomePage({ dark }) {
     <main className="max-w-4xl mx-auto px-6 py-12">
       <div className="mb-10 fade-up fade-up-1">
         <p
-          className="text-xs font-bold text-green-500 uppercase tracking-[0.2em] mb-3"
-          style={{ fontFamily: "Syne, sans-serif" }}
+          className="text-xs font-bold text-blue-500 uppercase tracking-[0.2em] mb-3"
+          style={{ fontFamily: "Space Grotesk, sans-serif" }}
         >
           7 prochains jours
         </p>
         <h1
           className={`text-5xl font-black tracking-tight leading-none mb-1 ${dark ? "text-white" : "text-zinc-900"}`}
-          style={{ fontFamily: "Syne, sans-serif" }}
+          style={{ fontFamily: "Space Grotesk, sans-serif" }}
         >
           Matchs
         </h1>
@@ -106,7 +128,7 @@ export default function HomePage({ dark }) {
       </div>
 
       {/* stats */}
-      <div className="grid grid-cols-3 gap-3 mb-10 fade-up fade-up-2">
+      <div className="grid grid-cols-3 gap-3 mb-8 fade-up fade-up-2">
         {stats.map(({ icon: Icon, label, value, color, bg, border }) => (
           <div
             key={label}
@@ -122,7 +144,7 @@ export default function HomePage({ dark }) {
             </div>
             <p
               className={`text-3xl font-black ${dark ? "text-white" : "text-zinc-900"}`}
-              style={{ fontFamily: "Syne, sans-serif" }}
+              style={{ fontFamily: "Space Grotesk, sans-serif" }}
             >
               {loading ? "—" : value}
             </p>
@@ -130,20 +152,62 @@ export default function HomePage({ dark }) {
         ))}
       </div>
 
+      {/* ✅ Barre de recherche */}
+      <div className="relative mb-8 fade-up fade-up-3">
+        <Search
+          size={15}
+          className={`absolute left-4 top-1/2 -translate-y-1/2 ${dark ? "text-zinc-500" : "text-zinc-400"}`}
+        />
+        <input
+          type="text"
+          placeholder="Rechercher une équipe..."
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          className={`w-full text-sm rounded-2xl px-4 py-3 pl-11 outline-none transition-all ${
+            dark
+              ? "bg-white/5 border border-white/8 text-white placeholder-zinc-600 focus:border-blue-500/50 focus:bg-white/8"
+              : "bg-white border border-zinc-200 text-zinc-900 placeholder-zinc-400 focus:border-blue-400 shadow-sm"
+          }`}
+        />
+        {search && (
+          <button
+            onClick={() => setSearch("")}
+            className={`absolute right-3 top-1/2 -translate-y-1/2 w-6 h-6 rounded-lg flex items-center justify-center transition-all ${
+              dark
+                ? "text-zinc-500 hover:text-zinc-300 hover:bg-white/8"
+                : "text-zinc-400 hover:text-zinc-600 hover:bg-zinc-100"
+            }`}
+          >
+            <X size={13} />
+          </button>
+        )}
+      </div>
+
+      {/* résultat de recherche */}
+      {search && !loading && (
+        <p
+          className={`text-xs mb-4 ${dark ? "text-zinc-500" : "text-zinc-400"}`}
+        >
+          {filtered.length === 0
+            ? `Aucun match trouvé pour "${search}"`
+            : `${filtered.length} match${filtered.length > 1 ? "s" : ""} pour "${search}"`}
+        </p>
+      )}
+
       {/* live banner */}
       {liveMatches.length > 0 && (
-        <div className="mb-8 flex items-center gap-3 px-5 py-3.5 rounded-2xl border border-green-500/20 bg-green-500/8 fade-up fade-up-3">
+        <div className="mb-8 flex items-center gap-3 px-5 py-3.5 rounded-2xl border border-blue-500/20 bg-blue-500/8 fade-up fade-up-3">
           <div className="relative shrink-0">
-            <span className="w-2 h-2 rounded-full bg-green-500 block" />
-            <span className="absolute inset-0 rounded-full bg-green-500 animate-ping opacity-60" />
+            <span className="w-2 h-2 rounded-full bg-blue-500 block" />
+            <span className="absolute inset-0 rounded-full bg-blue-500 animate-ping opacity-60" />
           </div>
           <p
-            className={`text-sm font-semibold ${dark ? "text-green-400" : "text-green-600"}`}
+            className={`text-sm font-semibold ${dark ? "text-blue-400" : "text-blue-600"}`}
           >
             {liveMatches.length} match{liveMatches.length > 1 ? "s" : ""} en
             direct maintenant
           </p>
-          <span className="ml-auto text-xs text-green-500/60 font-medium">
+          <span className="ml-auto text-xs text-blue-500/60 font-medium">
             {liveMatches
               .map((m) => `${m.home_team} — ${m.away_team}`)
               .join(" · ")}
@@ -154,7 +218,7 @@ export default function HomePage({ dark }) {
       {/* états */}
       {loading && (
         <div className="flex justify-center py-20">
-          <span className="w-8 h-8 rounded-full border-2 border-white/10 border-t-green-500 animate-spin" />
+          <span className="w-8 h-8 rounded-full border-2 border-white/10 border-t-blue-500 animate-spin" />
         </div>
       )}
 
@@ -165,7 +229,7 @@ export default function HomePage({ dark }) {
         </div>
       )}
 
-      {!loading && !error && matches.length === 0 && (
+      {!loading && !error && filtered.length === 0 && !search && (
         <p
           className={`text-center py-20 text-sm ${dark ? "text-zinc-600" : "text-zinc-400"}`}
         >
@@ -174,20 +238,20 @@ export default function HomePage({ dark }) {
       )}
 
       {/* liste groupée */}
-      {!loading && !error && (
+      {!loading && !error && filtered.length > 0 && (
         <div className="space-y-8">
           {sortedComps.map((comp) => (
             <section key={comp}>
               <div className="flex items-center gap-3 mb-3">
                 <span
                   className={`text-[11px] font-bold uppercase tracking-[0.15em] ${dark ? "text-zinc-600" : "text-zinc-400"}`}
-                  style={{ fontFamily: "Syne, sans-serif" }}
+                  style={{ fontFamily: "Space Grotesk, sans-serif" }}
                 >
                   {COMPETITION_LABELS[comp] ?? comp}
                 </span>
                 {grouped[comp].some((m) => m.status === "IN_PLAY") && (
-                  <span className="flex items-center gap-1 text-[10px] font-bold text-green-500 uppercase tracking-wider">
-                    <span className="w-1 h-1 rounded-full bg-green-500 animate-pulse" />
+                  <span className="flex items-center gap-1 text-[10px] font-bold text-blue-500 uppercase tracking-wider">
+                    <span className="w-1 h-1 rounded-full bg-blue-500 animate-pulse" />
                     Live
                   </span>
                 )}

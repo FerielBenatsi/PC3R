@@ -30,7 +30,6 @@ export default function NavBar({ dark, toggleDark }) {
   const dropdownRef = useRef(null);
   const navigate = useNavigate();
 
-  // ferme le dropdown si on clique ailleurs
   useEffect(() => {
     function handleClickOutside(e) {
       if (dropdownRef.current && !dropdownRef.current.contains(e.target)) {
@@ -63,7 +62,7 @@ export default function NavBar({ dark, toggleDark }) {
       <div
         className={`border-b transition-colors duration-500 ${
           dark
-            ? "bg-[#080a0f]/80 border-white/5 backdrop-blur-2xl"
+            ? "bg-[#0a0f1e]/80 border-white/5 backdrop-blur-2xl"
             : "bg-white/70 border-black/5 backdrop-blur-2xl shadow-sm"
         }`}
       >
@@ -71,19 +70,19 @@ export default function NavBar({ dark, toggleDark }) {
           {/* logo */}
           <Link to="/" className="flex items-center gap-2.5 group">
             <div className="relative w-8 h-8 flex items-center justify-center">
-              <div className="absolute inset-0 rounded-xl bg-green-500 opacity-20 group-hover:opacity-30 blur-sm transition-opacity" />
-              <div className="relative w-8 h-8 rounded-xl bg-linear-to-br from-green-400 to-emerald-600 flex items-center justify-center shadow-lg">
+              <div className="absolute inset-0 rounded-xl bg-blue-500 opacity-20 group-hover:opacity-30 blur-sm transition-opacity" />
+              <div className="relative w-8 h-8 rounded-xl bg-linear-to-br from-blue-400 to-indigo-600 flex items-center justify-center shadow-lg">
                 <Zap size={14} className="text-white fill-white" />
               </div>
             </div>
             <span
               className="text-[17px] font-black tracking-tight"
-              style={{ fontFamily: "Syne, sans-serif" }}
+              style={{ fontFamily: "Space Grotesk, sans-serif" }}
             >
               <span className={dark ? "text-white" : "text-zinc-900"}>
                 Sport
               </span>
-              <span className="text-green-500">Pulse</span>
+              <span className="text-blue-500">Pulse</span>
             </span>
           </Link>
 
@@ -116,7 +115,6 @@ export default function NavBar({ dark, toggleDark }) {
             />
 
             {user ? (
-              /* ── avatar + dropdown ── */
               <div className="relative" ref={dropdownRef}>
                 <button
                   onClick={() => setOpen((o) => !o)}
@@ -130,19 +128,18 @@ export default function NavBar({ dark, toggleDark }) {
                         : "hover:bg-zinc-100"
                   }`}
                 >
-                  {/* avatar */}
                   <div
                     className="w-7 h-7 rounded-lg flex items-center justify-center text-white text-xs font-black shrink-0"
                     style={{
                       background: avatarColor(user.username),
-                      fontFamily: "Syne, sans-serif",
+                      fontFamily: "Space Grotesk, sans-serif",
                     }}
                   >
                     {user.username[0].toUpperCase()}
                   </div>
                   <span
                     className={`text-sm font-semibold max-w-24 truncate ${dark ? "text-zinc-200" : "text-zinc-800"}`}
-                    style={{ fontFamily: "Syne, sans-serif" }}
+                    style={{ fontFamily: "Space Grotesk, sans-serif" }}
                   >
                     {user.username}
                   </span>
@@ -170,7 +167,7 @@ export default function NavBar({ dark, toggleDark }) {
                           : "text-zinc-700 hover:bg-zinc-50 hover:text-zinc-900"
                       }`}
                     >
-                      <User size={14} className="text-green-500 shrink-0" />
+                      <User size={14} className="text-blue-500 shrink-0" />
                       Mon profil
                     </Link>
 
@@ -193,11 +190,10 @@ export default function NavBar({ dark, toggleDark }) {
                 )}
               </div>
             ) : (
-              /* ── bouton connexion ── */
               <Link
                 to="/login"
-                className="text-sm px-4 py-2 rounded-xl font-semibold bg-green-500 hover:bg-green-400 text-white transition-all duration-150 shadow-lg shadow-green-500/20"
-                style={{ fontFamily: "Syne, sans-serif" }}
+                className="text-sm px-4 py-2 rounded-xl font-semibold bg-blue-500 hover:bg-blue-400 text-white transition-all duration-150 shadow-lg shadow-blue-500/20"
+                style={{ fontFamily: "Space Grotesk, sans-serif" }}
               >
                 Connexion
               </Link>

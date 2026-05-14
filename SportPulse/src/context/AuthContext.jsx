@@ -19,7 +19,7 @@ export function AuthProvider({ children }) {
 
     const data = await res.json();
     localStorage.setItem("token", data.token);
-    const userObj = { id: data.user_id, username: data.username };
+    const userObj = { username: data.username };
     localStorage.setItem("user", JSON.stringify(userObj));
     setUser(userObj);
     return userObj;

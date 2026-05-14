@@ -25,7 +25,7 @@ function Avatar({ username }) {
       className="w-9 h-9 rounded-xl shrink-0 flex items-center justify-center font-black text-white text-sm"
       style={{
         background: avatarColor(username),
-        fontFamily: "Syne, sans-serif",
+        fontFamily: "Space Grotesk, sans-serif",
       }}
     >
       {(username || "?")[0].toUpperCase()}
@@ -72,7 +72,7 @@ function RankBadge({ rank, dark }) {
     >
       <span
         className={`text-xs font-black ${cfg.text}`}
-        style={{ fontFamily: "Syne, sans-serif" }}
+        style={{ fontFamily: "Space Grotesk, sans-serif" }}
       >
         {rank}
       </span>
@@ -80,7 +80,7 @@ function RankBadge({ rank, dark }) {
   );
 }
 
-function PodiumCard({ player, dark, maxPts }) {
+function PodiumCard({ player, dark }) {
   const isFirst = player.rank === 1;
   return (
     <div
@@ -104,7 +104,7 @@ function PodiumCard({ player, dark, maxPts }) {
         className="w-12 h-12 rounded-2xl flex items-center justify-center font-black text-white text-base shadow-lg"
         style={{
           background: avatarColor(player.username),
-          fontFamily: "Syne, sans-serif",
+          fontFamily: "Space Grotesk, sans-serif",
         }}
       >
         {player.username[0].toUpperCase()}
@@ -112,13 +112,13 @@ function PodiumCard({ player, dark, maxPts }) {
       <div className="text-center">
         <p
           className={`text-sm font-black ${dark ? "text-white" : "text-zinc-900"}`}
-          style={{ fontFamily: "Syne, sans-serif" }}
+          style={{ fontFamily: "Space Grotesk, sans-serif" }}
         >
           {player.username}
         </p>
         <p
           className={`text-xl font-black mt-1 ${isFirst ? "text-yellow-400" : dark ? "text-white" : "text-zinc-900"}`}
-          style={{ fontFamily: "Syne, sans-serif" }}
+          style={{ fontFamily: "Space Grotesk, sans-serif" }}
         >
           {player.points}
         </p>
@@ -137,8 +137,8 @@ function PlayerRow({ player, dark, isMe, maxPts }) {
       className={`flex items-center gap-4 px-5 py-3.5 transition-all duration-150 group ${
         isMe
           ? dark
-            ? "bg-green-500/5"
-            : "bg-green-50"
+            ? "bg-blue-500/5"
+            : "bg-blue-50"
           : dark
             ? "hover:bg-white/3"
             : "hover:bg-zinc-50"
@@ -150,12 +150,12 @@ function PlayerRow({ player, dark, isMe, maxPts }) {
         <div className="flex items-center gap-2">
           <span
             className={`text-sm font-bold ${dark ? "text-zinc-200" : "text-zinc-800"}`}
-            style={{ fontFamily: "Syne, sans-serif" }}
+            style={{ fontFamily: "Space Grotesk, sans-serif" }}
           >
             {player.username}
           </span>
           {isMe && (
-            <span className="text-[10px] font-bold text-green-500 px-1.5 py-0.5 rounded-md bg-green-500/15 border border-green-500/25">
+            <span className="text-[10px] font-bold text-blue-500 px-1.5 py-0.5 rounded-md bg-blue-500/15 border border-blue-500/25">
               moi
             </span>
           )}
@@ -174,7 +174,7 @@ function PlayerRow({ player, dark, isMe, maxPts }) {
             className={`h-1.5 rounded-full overflow-hidden ${dark ? "bg-white/8" : "bg-zinc-100"}`}
           >
             <div
-              className="h-full rounded-full bg-linear-to-r from-green-500 to-emerald-400 transition-all"
+              className="h-full rounded-full bg-linear-to-r from-blue-500 to-indigo-600 transition-all"
               style={{
                 width: maxPts > 0 ? `${(player.points / maxPts) * 100}%` : "0%",
               }}
@@ -183,7 +183,7 @@ function PlayerRow({ player, dark, isMe, maxPts }) {
         </div>
         <span
           className={`text-sm font-black w-12 text-right tabular-nums ${dark ? "text-white" : "text-zinc-900"}`}
-          style={{ fontFamily: "Syne, sans-serif" }}
+          style={{ fontFamily: "Space Grotesk, sans-serif" }}
         >
           {player.points}
         </span>
@@ -229,17 +229,17 @@ export default function LeaderboardPage({ dark }) {
     <main className="max-w-4xl mx-auto px-6 py-10">
       <div className="mb-10 fade-up fade-up-1">
         <div className="flex items-center gap-2 mb-3">
-          <Trophy size={14} className="text-green-500" />
+          <Trophy size={14} className="text-blue-500" />
           <p
-            className="text-xs font-bold text-green-500 uppercase tracking-widest"
-            style={{ fontFamily: "Syne, sans-serif" }}
+            className="text-xs font-bold text-blue-500 uppercase tracking-widest"
+            style={{ fontFamily: "Space Grotesk, sans-serif" }}
           >
             Classement
           </p>
         </div>
         <h1
           className={`text-5xl font-black tracking-tight ${dark ? "text-white" : "text-zinc-900"}`}
-          style={{ fontFamily: "Syne, sans-serif" }}
+          style={{ fontFamily: "Space Grotesk, sans-serif" }}
         >
           Top joueurs
         </h1>
@@ -274,7 +274,7 @@ export default function LeaderboardPage({ dark }) {
                   ? "text-zinc-500 hover:text-zinc-300"
                   : "text-zinc-400 hover:text-zinc-600"
             }`}
-            style={{ fontFamily: "Syne, sans-serif" }}
+            style={{ fontFamily: "Space Grotesk, sans-serif" }}
           >
             <Icon size={13} />
             {label}
@@ -282,24 +282,29 @@ export default function LeaderboardPage({ dark }) {
         ))}
       </div>
 
+      {/* ma position */}
       {me && (
         <div
-          className={`flex items-center gap-3 px-5 py-3 rounded-2xl mb-4 border fade-up fade-up-3 ${dark ? "bg-green-500/5 border-green-500/15" : "bg-green-50 border-green-200"}`}
+          className={`flex items-center gap-3 px-5 py-3 rounded-2xl mb-4 border fade-up fade-up-3 ${
+            dark
+              ? "bg-blue-500/5 border-blue-500/15"
+              : "bg-blue-50 border-blue-200"
+          }`}
         >
-          <Star size={13} className="text-green-500 shrink-0" />
+          <Star size={13} className="text-blue-500 shrink-0" />
           <p
             className={`text-sm font-medium ${dark ? "text-zinc-300" : "text-zinc-600"}`}
           >
-            Tu es <span className="font-black text-green-500">#{me.rank}</span>{" "}
+            Tu es <span className="font-black text-blue-500">#{me.rank}</span>{" "}
             avec{" "}
-            <span className="font-black text-green-500">{me.points} pts</span>
+            <span className="font-black text-blue-500">{me.points} pts</span>
           </p>
         </div>
       )}
 
       {loading ? (
         <div className="flex justify-center py-20">
-          <span className="w-8 h-8 rounded-full border-2 border-white/10 border-t-green-500 animate-spin" />
+          <span className="w-8 h-8 rounded-full border-2 border-white/10 border-t-blue-500 animate-spin" />
         </div>
       ) : (
         <div

@@ -13,6 +13,8 @@ import {
   Minus,
   Target,
   AlertCircle,
+  Edit2,
+  X,
 } from "lucide-react";
 import { apiFetch } from "../services/api";
 import { useAuth } from "../context/useAuth";
@@ -53,6 +55,12 @@ const TEAM_INITIALS = (name) =>
     .slice(0, 3)
     .toUpperCase();
 
+function parseMatchDate(dateStr) {
+  if (!dateStr) return new Date();
+  if (dateStr.includes("T")) return new Date(dateStr);
+  return new Date(dateStr.replace(" ", "T") + "Z");
+}
+
 function Avatar({ username, size = "md" }) {
   const sz = size === "sm" ? "w-7 h-7 text-xs" : "w-9 h-9 text-sm";
   return (
@@ -60,7 +68,7 @@ function Avatar({ username, size = "md" }) {
       className={`${sz} rounded-xl shrink-0 flex items-center justify-center font-black text-white`}
       style={{
         background: avatarColor(username),
-        fontFamily: "Syne, sans-serif",
+        fontFamily: "Space Grotesk, sans-serif",
       }}
     >
       {(username || "?")[0].toUpperCase()}
@@ -71,11 +79,11 @@ function Avatar({ username, size = "md" }) {
 function PointsBadge({ points }) {
   if (points === 3)
     return (
-      <div className="flex items-center gap-1 px-2 py-1 rounded-lg bg-green-500/15 border border-green-500/30 w-16 justify-center">
-        <Star size={9} className="text-green-500 fill-green-500" />
+      <div className="flex items-center gap-1 px-2 py-1 rounded-lg bg-blue-500/15 border border-blue-500/30 w-16 justify-center">
+        <Star size={9} className="text-blue-500 fill-blue-500" />
         <span
-          className="text-[8px] font-black text-green-500"
-          style={{ fontFamily: "Syne, sans-serif" }}
+          className="text-[8px] font-black text-blue-500"
+          style={{ fontFamily: "Space Grotesk, sans-serif" }}
         >
           3 pts
         </span>
@@ -87,7 +95,7 @@ function PointsBadge({ points }) {
         <Check size={9} className="text-orange-400" />
         <span
           className="text-[8px] font-black text-orange-400"
-          style={{ fontFamily: "Syne, sans-serif" }}
+          style={{ fontFamily: "Space Grotesk, sans-serif" }}
         >
           1 pt
         </span>
@@ -98,7 +106,7 @@ function PointsBadge({ points }) {
       <Minus size={9} className="text-red-400" />
       <span
         className="text-[8px] font-black text-red-400"
-        style={{ fontFamily: "Syne, sans-serif" }}
+        style={{ fontFamily: "Space Grotesk, sans-serif" }}
       >
         0 pt
       </span>
@@ -113,7 +121,7 @@ function ScoreInput({ value, onChange, dark }) {
       <button
         type="button"
         onClick={() => onChange(String(num + 1))}
-        className="w-7 h-7 rounded-lg bg-white/5 border border-white/10 hover:bg-green-500/20 hover:border-green-500/40 text-zinc-400 hover:text-green-400 transition-all flex items-center justify-center text-sm font-bold"
+        className="w-7 h-7 rounded-lg bg-white/5 border border-white/10 hover:bg-blue-500/20 hover:border-blue-500/40 text-zinc-400 hover:text-blue-400 transition-all flex items-center justify-center text-sm font-bold"
       >
         +
       </button>
@@ -122,7 +130,7 @@ function ScoreInput({ value, onChange, dark }) {
       >
         <span
           className={`text-2xl font-black tabular-nums ${dark ? "text-white" : "text-zinc-900"}`}
-          style={{ fontFamily: "Syne, sans-serif" }}
+          style={{ fontFamily: "Space Grotesk, sans-serif" }}
         >
           {value === "" ? "–" : value}
         </span>
@@ -139,13 +147,13 @@ function ScoreInput({ value, onChange, dark }) {
 }
 
 const fmt = (d) =>
-  new Date(d).toLocaleDateString("fr-FR", {
+  parseMatchDate(d).toLocaleDateString("fr-FR", {
     weekday: "long",
     day: "numeric",
     month: "long",
   });
 const fmtTime = (d) =>
-  new Date(d).toLocaleTimeString("fr-FR", {
+  parseMatchDate(d).toLocaleTimeString("fr-FR", {
     hour: "2-digit",
     minute: "2-digit",
   });
@@ -170,6 +178,11 @@ export default function MatchDetailPage({ dark }) {
   const [awayInput, setAwayInput] = useState("");
   const [pronoSent, setPronoSent] = useState(false);
   const [pronoLoading, setPronoLoading] = useState(false);
+
+  // États pour la modification
+  const [editingProno, setEditingProno] = useState(false);
+  const [editHome, setEditHome] = useState("");
+  const [editAway, setEditAway] = useState("");
 
   const [commentText, setCommentText] = useState("");
   const [commentLoading, setCommentLoading] = useState(false);
@@ -228,11 +241,48 @@ export default function MatchDetailPage({ dark }) {
       });
       if (!res?.ok) throw new Error("Erreur lors de l'envoi du pronostic");
       setPronoSent(true);
+      setMyPrediction({
+        home_score_pred: parseInt(homeInput),
+        away_score_pred: parseInt(awayInput),
+      });
     } catch (e) {
       alert(e.message);
     } finally {
       setPronoLoading(false);
     }
+  }
+
+  async function handleUpdateProno() {
+    if (editHome === "" || editAway === "" || !user) return;
+    setPronoLoading(true);
+    try {
+      const res = await apiFetch(`/api/matches/${id}/predictions`, {
+        method: "PUT",
+        body: JSON.stringify({
+          home_score_pred: parseInt(editHome),
+          away_score_pred: parseInt(editAway),
+        }),
+      });
+      if (!res?.ok) {
+        const err = await res.json().catch(() => ({}));
+        throw new Error(err.error || "Erreur lors de la modification");
+      }
+      setMyPrediction({
+        home_score_pred: parseInt(editHome),
+        away_score_pred: parseInt(editAway),
+      });
+      setEditingProno(false);
+    } catch (e) {
+      alert(e.message);
+    } finally {
+      setPronoLoading(false);
+    }
+  }
+
+  function startEdit() {
+    setEditHome(String(myPrediction?.home_score_pred ?? 0));
+    setEditAway(String(myPrediction?.away_score_pred ?? 0));
+    setEditingProno(true);
   }
 
   async function handleComment() {
@@ -257,7 +307,7 @@ export default function MatchDetailPage({ dark }) {
   if (loading)
     return (
       <div className="flex justify-center items-center min-h-[calc(100vh-64px)]">
-        <span className="w-8 h-8 rounded-full border-2 border-white/10 border-t-green-500 animate-spin" />
+        <span className="w-8 h-8 rounded-full border-2 border-white/10 border-t-blue-500 animate-spin" />
       </div>
     );
 
@@ -280,9 +330,14 @@ export default function MatchDetailPage({ dark }) {
 
   const isFinished = match.status === "FINISHED";
   const isLive = match.status === "IN_PLAY";
-  const isScheduled = match.status === "SCHEDULED";
+  const isScheduled = match.status === "SCHEDULED" || match.status === "TIMED";
   const homeColor = TEAM_COLORS[match.home_team] || "#6b7280";
   const awayColor = TEAM_COLORS[match.away_team] || "#6b7280";
+
+  // Calcul des heures restantes avant le match
+  const matchDate = parseMatchDate(match.match_date);
+  const hoursUntilMatch = (matchDate - Date.now()) / (1000 * 60 * 60);
+  const canEdit = pronoSent && hoursUntilMatch >= 24 && isScheduled;
 
   return (
     <main className="max-w-4xl mx-auto px-6 py-10">
@@ -310,19 +365,19 @@ export default function MatchDetailPage({ dark }) {
         </div>
         <div className="flex items-center justify-between mb-10 relative">
           <div className="flex items-center gap-2">
-            <Trophy size={12} className="text-green-500" />
+            <Trophy size={12} className="text-blue-500" />
             <span
-              className="text-xs font-bold text-green-500 uppercase tracking-widest"
-              style={{ fontFamily: "Syne, sans-serif" }}
+              className="text-xs font-bold text-blue-500 uppercase tracking-widest"
+              style={{ fontFamily: "Space Grotesk, sans-serif" }}
             >
               {match.competition}
             </span>
           </div>
           <div className="flex items-center gap-2">
             {isLive && (
-              <div className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-green-500/15 border border-green-500/25">
-                <span className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
-                <span className="text-xs font-bold text-green-400">
+              <div className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-blue-500/15 border border-blue-500/25">
+                <span className="w-1.5 h-1.5 rounded-full bg-blue-500 animate-pulse" />
+                <span className="text-xs font-bold text-blue-400">
                   En direct
                 </span>
               </div>
@@ -362,15 +417,15 @@ export default function MatchDetailPage({ dark }) {
                   {isScheduled ? (
                     <span
                       className={`text-3xl font-black ${dark ? "text-zinc-700" : "text-zinc-300"}`}
-                      style={{ fontFamily: "Syne, sans-serif" }}
+                      style={{ fontFamily: "Space Grotesk, sans-serif" }}
                     >
                       VS
                     </span>
                   ) : (
                     <div className="flex items-center gap-5">
                       <span
-                        className={`text-6xl font-black tabular-nums ${isLive ? "text-green-400" : dark ? "text-white" : "text-zinc-900"}`}
-                        style={{ fontFamily: "Syne, sans-serif" }}
+                        className={`text-6xl font-black tabular-nums ${isLive ? "text-blue-400" : dark ? "text-white" : "text-zinc-900"}`}
+                        style={{ fontFamily: "Space Grotesk, sans-serif" }}
                       >
                         {match.home_score}
                       </span>
@@ -380,8 +435,8 @@ export default function MatchDetailPage({ dark }) {
                         —
                       </span>
                       <span
-                        className={`text-6xl font-black tabular-nums ${isLive ? "text-green-400" : dark ? "text-white" : "text-zinc-900"}`}
-                        style={{ fontFamily: "Syne, sans-serif" }}
+                        className={`text-6xl font-black tabular-nums ${isLive ? "text-blue-400" : dark ? "text-white" : "text-zinc-900"}`}
+                        style={{ fontFamily: "Space Grotesk, sans-serif" }}
                       >
                         {match.away_score}
                       </span>
@@ -399,14 +454,14 @@ export default function MatchDetailPage({ dark }) {
                   style={{
                     background: side.color,
                     boxShadow: `0 8px 32px ${side.color}55`,
-                    fontFamily: "Syne, sans-serif",
+                    fontFamily: "Space Grotesk, sans-serif",
                   }}
                 >
                   {TEAM_INITIALS(side.team)}
                 </div>
                 <span
                   className={`text-base font-black text-center ${dark ? "text-white" : "text-zinc-900"}`}
-                  style={{ fontFamily: "Syne, sans-serif" }}
+                  style={{ fontFamily: "Space Grotesk, sans-serif" }}
                 >
                   {side.team}
                 </span>
@@ -425,21 +480,33 @@ export default function MatchDetailPage({ dark }) {
       <div
         className={`rounded-2xl p-6 mb-6 fade-up fade-up-3 ${dark ? "glass" : "bg-white shadow-lg border border-zinc-100"}`}
       >
-        <div className="flex items-center gap-2 mb-5">
-          <Target size={14} className="text-green-500" />
-          <h2
-            className={`text-xs font-black uppercase tracking-widest ${dark ? "text-zinc-400" : "text-zinc-500"}`}
-            style={{ fontFamily: "Syne, sans-serif" }}
-          >
-            Mon pronostic
-          </h2>
+        <div className="flex items-center justify-between mb-5">
+          <div className="flex items-center gap-2">
+            <Target size={14} className="text-blue-500" />
+            <h2
+              className={`text-xs font-black uppercase tracking-widest ${dark ? "text-zinc-400" : "text-zinc-500"}`}
+              style={{ fontFamily: "Space Grotesk, sans-serif" }}
+            >
+              Mon pronostic
+            </h2>
+          </div>
+          {/* bouton modifier — visible si prono soumis et 24h+ restantes */}
+          {canEdit && !editingProno && (
+            <button
+              onClick={startEdit}
+              className={`flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-lg transition-all ${dark ? "text-blue-400 bg-blue-500/10 border border-blue-500/20 hover:bg-blue-500/20" : "text-blue-500 bg-blue-50 border border-blue-200 hover:bg-blue-100"}`}
+              style={{ fontFamily: "Space Grotesk, sans-serif" }}
+            >
+              <Edit2 size={11} /> Modifier
+            </button>
+          )}
         </div>
 
         {!user ? (
           <div className="flex items-center gap-2.5 text-sm text-zinc-500">
             <Lock size={13} />
             <span>
-              <Link to="/login" className="text-green-500 hover:text-green-400">
+              <Link to="/login" className="text-blue-500 hover:text-blue-400">
                 Connecte-toi
               </Link>{" "}
               pour pronostiquer.
@@ -453,10 +520,66 @@ export default function MatchDetailPage({ dark }) {
               {isLive ? "est en cours" : "est terminé"}.
             </span>
           </div>
+        ) : editingProno ? (
+          /* ── formulaire de modification ── */
+          <div>
+            <div className="flex items-center justify-center gap-6 mb-4">
+              <span
+                className={`text-sm font-bold flex-1 text-right ${dark ? "text-zinc-300" : "text-zinc-700"}`}
+                style={{ fontFamily: "Space Grotesk, sans-serif" }}
+              >
+                {match.home_team}
+              </span>
+              <div className="flex items-center gap-3">
+                <ScoreInput
+                  value={editHome}
+                  onChange={setEditHome}
+                  dark={dark}
+                />
+                <span
+                  className={`text-xl font-light ${dark ? "text-zinc-600" : "text-zinc-400"}`}
+                >
+                  :
+                </span>
+                <ScoreInput
+                  value={editAway}
+                  onChange={setEditAway}
+                  dark={dark}
+                />
+              </div>
+              <span
+                className={`text-sm font-bold flex-1 ${dark ? "text-zinc-300" : "text-zinc-700"}`}
+                style={{ fontFamily: "Space Grotesk, sans-serif" }}
+              >
+                {match.away_team}
+              </span>
+            </div>
+            <div className="flex items-center justify-center gap-3">
+              <button
+                onClick={() => setEditingProno(false)}
+                className={`flex items-center gap-1.5 px-4 py-2 rounded-xl text-sm font-semibold transition-all ${dark ? "bg-white/5 border border-white/10 text-zinc-400 hover:bg-white/10" : "bg-zinc-100 border border-zinc-200 text-zinc-500 hover:bg-zinc-200"}`}
+              >
+                <X size={13} /> Annuler
+              </button>
+              <button
+                onClick={handleUpdateProno}
+                disabled={editHome === "" || editAway === "" || pronoLoading}
+                className="flex items-center gap-1.5 px-6 py-2 rounded-xl font-bold text-sm text-white bg-blue-500 hover:bg-blue-400 disabled:opacity-30 disabled:cursor-not-allowed transition-all shadow-lg shadow-blue-500/20"
+                style={{ fontFamily: "Space Grotesk, sans-serif" }}
+              >
+                {pronoLoading ? (
+                  <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                ) : (
+                  "Sauvegarder"
+                )}
+              </button>
+            </div>
+          </div>
         ) : pronoSent ? (
+          /* ── prono confirmé ── */
           <div className="flex items-center gap-4 py-1">
-            <div className="w-9 h-9 rounded-xl bg-green-500/15 border border-green-500/25 flex items-center justify-center shrink-0">
-              <Check size={15} className="text-green-400" />
+            <div className="w-9 h-9 rounded-xl bg-blue-500/15 border border-blue-500/25 flex items-center justify-center shrink-0">
+              <Check size={15} className="text-blue-400" />
             </div>
             <div>
               <p
@@ -464,8 +587,8 @@ export default function MatchDetailPage({ dark }) {
               >
                 Pronostic enregistré —{" "}
                 <span
-                  className="text-green-400"
-                  style={{ fontFamily: "Syne, sans-serif" }}
+                  className="text-blue-400"
+                  style={{ fontFamily: "Space Grotesk, sans-serif" }}
                 >
                   {myPrediction
                     ? `${myPrediction.home_score_pred} : ${myPrediction.away_score_pred}`
@@ -473,15 +596,18 @@ export default function MatchDetailPage({ dark }) {
                 </span>
               </p>
               <p className="text-xs text-zinc-500 mt-0.5">
-                Points calculés après le match
+                {canEdit
+                  ? "Modifiable jusqu'à 24h avant le match"
+                  : "Points calculés après le match"}
               </p>
             </div>
           </div>
         ) : (
+          /* ── formulaire initial ── */
           <div className="flex items-center justify-center gap-6">
             <span
               className={`text-sm font-bold flex-1 text-right ${dark ? "text-zinc-300" : "text-zinc-700"}`}
-              style={{ fontFamily: "Syne, sans-serif" }}
+              style={{ fontFamily: "Space Grotesk, sans-serif" }}
             >
               {match.home_team}
             </span>
@@ -504,15 +630,15 @@ export default function MatchDetailPage({ dark }) {
             </div>
             <span
               className={`text-sm font-bold flex-1 ${dark ? "text-zinc-300" : "text-zinc-700"}`}
-              style={{ fontFamily: "Syne, sans-serif" }}
+              style={{ fontFamily: "Space Grotesk, sans-serif" }}
             >
               {match.away_team}
             </span>
             <button
               onClick={handleProno}
               disabled={homeInput === "" || awayInput === "" || pronoLoading}
-              className="px-6 py-3 rounded-xl font-bold text-sm text-white bg-green-500 hover:bg-green-400 disabled:opacity-30 disabled:cursor-not-allowed transition-all shadow-lg shadow-green-500/20"
-              style={{ fontFamily: "Syne, sans-serif" }}
+              className="px-6 py-3 rounded-xl font-bold text-sm text-white bg-blue-500 hover:bg-blue-400 disabled:opacity-30 disabled:cursor-not-allowed transition-all shadow-lg shadow-blue-500/20"
+              style={{ fontFamily: "Space Grotesk, sans-serif" }}
             >
               {pronoLoading ? (
                 <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin inline-block" />
@@ -553,7 +679,7 @@ export default function MatchDetailPage({ dark }) {
                     ? "text-zinc-500 hover:text-zinc-300"
                     : "text-zinc-400 hover:text-zinc-600"
               }`}
-              style={{ fontFamily: "Syne, sans-serif" }}
+              style={{ fontFamily: "Space Grotesk, sans-serif" }}
             >
               <Icon size={13} />
               {label}
@@ -584,7 +710,7 @@ export default function MatchDetailPage({ dark }) {
                     <div className="flex items-center gap-2 mb-1.5">
                       <span
                         className={`text-sm font-bold ${dark ? "text-white" : "text-zinc-900"}`}
-                        style={{ fontFamily: "Syne, sans-serif" }}
+                        style={{ fontFamily: "Space Grotesk, sans-serif" }}
                       >
                         {c.username}
                       </span>
@@ -618,14 +744,14 @@ export default function MatchDetailPage({ dark }) {
                       onKeyDown={(e) => e.key === "Enter" && handleComment()}
                       className={`flex-1 text-sm rounded-xl px-4 py-2.5 outline-none transition-all ${
                         dark
-                          ? "bg-white/4 border border-white/8 text-white placeholder-zinc-600 focus:border-green-500/50"
-                          : "bg-zinc-50 border border-zinc-200 text-zinc-900 placeholder-zinc-400 focus:border-green-400"
+                          ? "bg-white/4 border border-white/8 text-white placeholder-zinc-600 focus:border-blue-500/50"
+                          : "bg-zinc-50 border border-zinc-200 text-zinc-900 placeholder-zinc-400 focus:border-blue-400"
                       }`}
                     />
                     <button
                       onClick={handleComment}
                       disabled={!commentText.trim() || commentLoading}
-                      className="w-10 h-10 flex items-center justify-center rounded-xl bg-green-500 hover:bg-green-400 disabled:opacity-30 disabled:cursor-not-allowed transition-all text-white shadow-lg shadow-green-500/20"
+                      className="w-10 h-10 flex items-center justify-center rounded-xl bg-blue-500 hover:bg-blue-400 disabled:opacity-30 disabled:cursor-not-allowed transition-all text-white shadow-lg shadow-blue-500/20"
                     >
                       {commentLoading ? (
                         <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
@@ -658,13 +784,13 @@ export default function MatchDetailPage({ dark }) {
                   <Avatar username={p.username} size="sm" />
                   <span
                     className={`text-sm font-bold flex-1 ${dark ? "text-zinc-200" : "text-zinc-700"}`}
-                    style={{ fontFamily: "Syne, sans-serif" }}
+                    style={{ fontFamily: "Space Grotesk, sans-serif" }}
                   >
                     {p.username}
                   </span>
                   <div
                     className={`flex items-center gap-1 px-2 py-1 rounded-lg text-[10px] font-black tabular-nums ${dark ? "bg-white/5 border border-white/8" : "bg-zinc-50 border border-zinc-200"}`}
-                    style={{ fontFamily: "Syne, sans-serif" }}
+                    style={{ fontFamily: "Space Grotesk, sans-serif" }}
                   >
                     <span
                       className={`text-sm font-black tabular-nums ${dark ? "text-zinc-200" : "text-zinc-800"}`}
@@ -682,7 +808,9 @@ export default function MatchDetailPage({ dark }) {
                       {p.away_score_pred}
                     </span>
                   </div>
-                  {p.points != null && <PointsBadge points={p.points} />}
+                  {p.points_earned != null && (
+                    <PointsBadge points={p.points_earned} />
+                  )}
                 </div>
               ))}
             </div>
