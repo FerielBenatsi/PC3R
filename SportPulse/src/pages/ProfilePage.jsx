@@ -11,6 +11,7 @@ import {
   Minus,
   Calendar,
   AlertCircle,
+  Clock,
 } from "lucide-react";
 import { apiFetch } from "../services/api";
 
@@ -30,11 +31,11 @@ const avatarColor = (name) =>
 function PointsBadge({ points }) {
   if (points === 3)
     return (
-      <div className="flex items-center gap-1 px-2 py-1 rounded-lg bg-green-500/15 border border-green-500/30 w-16 justify-center">
-        <Star size={9} className="text-green-500 fill-green-500" />
+      <div className="flex items-center gap-1 px-2 py-1 rounded-lg bg-blue-500/15 border border-blue-500/30 w-16 justify-center">
+        <Star size={9} className="text-blue-500 fill-blue-500" />
         <span
-          className="text-[8px] font-black text-green-500"
-          style={{ fontFamily: "Syne, sans-serif" }}
+          className="text-[8px] font-black text-blue-500"
+          style={{ fontFamily: "Space Grotesk, sans-serif" }}
         >
           3 pts
         </span>
@@ -46,20 +47,33 @@ function PointsBadge({ points }) {
         <Check size={9} className="text-orange-400" />
         <span
           className="text-[8px] font-black text-orange-400"
-          style={{ fontFamily: "Syne, sans-serif" }}
+          style={{ fontFamily: "Space Grotesk, sans-serif" }}
         >
           1 pt
         </span>
       </div>
     );
+  if (points === 0)
+    return (
+      <div className="flex items-center gap-1 px-2 py-1 rounded-lg bg-red-500/15 border border-red-500/30 w-16 justify-center">
+        <Minus size={9} className="text-red-400" />
+        <span
+          className="text-[8px] font-black text-red-400"
+          style={{ fontFamily: "Space Grotesk, sans-serif" }}
+        >
+          0 pt
+        </span>
+      </div>
+    );
+  // null = en attente
   return (
-    <div className="flex items-center gap-1 px-2 py-1 rounded-lg bg-red-500/15 border border-red-500/30 w-16 justify-center">
-      <Minus size={9} className="text-red-400" />
+    <div className="flex items-center gap-1 px-2 py-1 rounded-lg bg-zinc-500/15 border border-zinc-500/30 w-16 justify-center">
+      <Clock size={9} className="text-zinc-400" />
       <span
-        className="text-[8px] font-black text-red-400"
-        style={{ fontFamily: "Syne, sans-serif" }}
+        className="text-[8px] font-black text-zinc-400"
+        style={{ fontFamily: "Space Grotesk, sans-serif" }}
       >
-        0 pt
+        attente
       </span>
     </div>
   );
@@ -80,7 +94,7 @@ function StatCard({ icon: Icon, label, value, color, dark }) {
       </div>
       <p
         className={`text-2xl font-black ${dark ? "text-white" : "text-zinc-900"}`}
-        style={{ fontFamily: "Syne, sans-serif" }}
+        style={{ fontFamily: "Space Grotesk, sans-serif" }}
       >
         {value}
       </p>
@@ -113,7 +127,7 @@ export default function ProfilePage({ dark }) {
   if (loading)
     return (
       <div className="flex justify-center items-center min-h-[calc(100vh-64px)]">
-        <span className="w-8 h-8 rounded-full border-2 border-white/10 border-t-green-500 animate-spin" />
+        <span className="w-8 h-8 rounded-full border-2 border-white/10 border-t-blue-500 animate-spin" />
       </div>
     );
 
@@ -139,7 +153,8 @@ export default function ProfilePage({ dark }) {
   const p = profile;
   const total = p.stats?.total_predictions ?? 0;
   const correct = p.stats?.correct ?? 0;
-  const raté = total - correct;
+  const wrong = p.stats?.wrong ?? 0; // ✅ vrais ratés
+  const pending = p.stats?.pending ?? 0; // ✅ en attente
   const taux = Math.round(p.stats?.success_rate ?? 0);
   const color = avatarColor(p.username);
   const history = p.history ?? [];
@@ -175,7 +190,7 @@ export default function ProfilePage({ dark }) {
             style={{
               background: color,
               boxShadow: `0 12px 40px ${color}50`,
-              fontFamily: "Syne, sans-serif",
+              fontFamily: "Space Grotesk, sans-serif",
             }}
           >
             {p.username[0].toUpperCase()}
@@ -183,7 +198,7 @@ export default function ProfilePage({ dark }) {
           <div className="flex-1">
             <h1
               className={`text-3xl font-black tracking-tight mb-1 ${dark ? "text-white" : "text-zinc-900"}`}
-              style={{ fontFamily: "Syne, sans-serif" }}
+              style={{ fontFamily: "Space Grotesk, sans-serif" }}
             >
               {p.username}
             </h1>
@@ -219,7 +234,7 @@ export default function ProfilePage({ dark }) {
           <div className="text-right shrink-0">
             <p
               className={`text-5xl font-black tabular-nums ${dark ? "text-white" : "text-zinc-900"}`}
-              style={{ fontFamily: "Syne, sans-serif" }}
+              style={{ fontFamily: "Space Grotesk, sans-serif" }}
             >
               {p.points_total ?? 0}
             </p>
@@ -235,14 +250,14 @@ export default function ProfilePage({ dark }) {
             className={`h-2 rounded-full overflow-hidden ${dark ? "bg-white/8" : "bg-zinc-100"}`}
           >
             <div
-              className="h-full rounded-full bg-linear-to-r from-green-500 to-emerald-400"
+              className="h-full rounded-full bg-linear-to-r from-blue-500 to-indigo-600 transition-all"
               style={{ width: `${taux}%` }}
             />
           </div>
           <p
             className={`text-xs mt-1.5 ${dark ? "text-zinc-600" : "text-zinc-400"}`}
           >
-            {taux}% de réussite globale
+            {taux}% de réussite sur matchs évalués
           </p>
         </div>
       </div>
@@ -260,14 +275,14 @@ export default function ProfilePage({ dark }) {
           icon={Star}
           label="Corrects"
           value={correct}
-          color="text-green-400"
+          color="text-blue-400"
           dark={dark}
         />
         <StatCard
           icon={Check}
           label="Ratés"
-          value={Math.max(0, raté)}
-          color="text-orange-400"
+          value={wrong}
+          color="text-red-400"
           dark={dark}
         />
         <StatCard
@@ -286,33 +301,43 @@ export default function ProfilePage({ dark }) {
         >
           <h2
             className={`text-xs font-black uppercase tracking-widest mb-4 ${dark ? "text-zinc-500" : "text-zinc-400"}`}
-            style={{ fontFamily: "Syne, sans-serif" }}
+            style={{ fontFamily: "Space Grotesk, sans-serif" }}
           >
             Répartition des pronostics
           </h2>
           <div className="flex gap-1 h-3 rounded-full overflow-hidden mb-3">
             <div
-              className="bg-green-500 rounded-l-full"
+              className="bg-blue-500 rounded-l-full"
               style={{ width: `${(correct / total) * 100}%` }}
             />
             <div
-              className="bg-red-500/60 rounded-r-full"
-              style={{ width: `${(Math.max(0, raté) / total) * 100}%` }}
+              className="bg-red-500/60"
+              style={{ width: `${(wrong / total) * 100}%` }}
+            />
+            <div
+              className="bg-zinc-500/60 rounded-r-full"
+              style={{ width: `${(pending / total) * 100}%` }}
             />
           </div>
-          <div className="flex gap-5">
+          <div className="flex gap-5 flex-wrap">
             {[
               {
                 label: "Corrects",
                 value: correct,
-                color: "bg-green-500",
-                text: "text-green-400",
+                color: "bg-blue-500",
+                text: "text-blue-400",
               },
               {
                 label: "Ratés",
-                value: Math.max(0, raté),
+                value: wrong,
                 color: "bg-red-500/60",
                 text: "text-red-400",
+              },
+              {
+                label: "En attente",
+                value: pending,
+                color: "bg-zinc-500/60",
+                text: "text-zinc-400",
               },
             ].map(({ label, value, color, text }) => (
               <div key={label} className="flex items-center gap-2">
@@ -338,7 +363,7 @@ export default function ProfilePage({ dark }) {
           />
           <h2
             className={`text-xs font-black uppercase tracking-widest ${dark ? "text-zinc-500" : "text-zinc-400"}`}
-            style={{ fontFamily: "Syne, sans-serif" }}
+            style={{ fontFamily: "Space Grotesk, sans-serif" }}
           >
             Historique des pronostics
           </h2>
@@ -364,7 +389,7 @@ export default function ProfilePage({ dark }) {
                   <div className="flex-1 min-w-0">
                     <p
                       className={`text-sm font-semibold truncate ${dark ? "text-zinc-200" : "text-zinc-800"}`}
-                      style={{ fontFamily: "Syne, sans-serif" }}
+                      style={{ fontFamily: "Space Grotesk, sans-serif" }}
                     >
                       {h.home_team} — {h.away_team}
                     </p>
@@ -378,7 +403,7 @@ export default function ProfilePage({ dark }) {
                   {/* prono */}
                   <div
                     className={`flex items-center gap-1 px-2 py-1 rounded-lg text-[10px] font-black tabular-nums ${dark ? "bg-white/5 border border-white/8" : "bg-zinc-50 border border-zinc-200"}`}
-                    style={{ fontFamily: "Syne, sans-serif" }}
+                    style={{ fontFamily: "Space Grotesk, sans-serif" }}
                   >
                     <span className={dark ? "text-zinc-500" : "text-zinc-400"}>
                       Prono
@@ -392,7 +417,7 @@ export default function ProfilePage({ dark }) {
                   {h.home_score != null && (
                     <div
                       className={`flex items-center gap-1 px-2 py-1 rounded-lg text-[10px] font-black tabular-nums ${dark ? "bg-white/5 border border-white/8" : "bg-zinc-50 border border-zinc-200"}`}
-                      style={{ fontFamily: "Syne, sans-serif" }}
+                      style={{ fontFamily: "Space Grotesk, sans-serif" }}
                     >
                       <span
                         className={dark ? "text-zinc-500" : "text-zinc-400"}
@@ -407,9 +432,7 @@ export default function ProfilePage({ dark }) {
                     </div>
                   )}
 
-                  {h.points_earned != null && (
-                    <PointsBadge points={h.points_earned} />
-                  )}
+                  <PointsBadge points={h.points_earned} />
                 </div>
               ))
             )}
