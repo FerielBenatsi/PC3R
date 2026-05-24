@@ -153,8 +153,8 @@ export default function ProfilePage({ dark }) {
   const p = profile;
   const total = p.stats?.total_predictions ?? 0;
   const correct = p.stats?.correct ?? 0;
-  const wrong = p.stats?.wrong ?? 0; // ✅ vrais ratés
-  const pending = p.stats?.pending ?? 0; // ✅ en attente
+  const wrong = p.stats?.wrong ?? 0; // vrais ratés
+  const pending = p.stats?.pending ?? 0; // en attente
   const taux = Math.round(p.stats?.success_rate ?? 0);
   const color = avatarColor(p.username);
   const history = p.history ?? [];
