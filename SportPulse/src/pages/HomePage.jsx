@@ -43,7 +43,7 @@ export default function HomePage({ dark }) {
     fetchMatches();
   }, []);
 
-  // ✅ Filtre par nom d'équipe (insensible à la casse et aux accents)
+ 
   const normalize = (str) =>
     str
       .toLowerCase()
@@ -152,7 +152,7 @@ export default function HomePage({ dark }) {
         ))}
       </div>
 
-      {/* ✅ Barre de recherche */}
+      {/* Barre de recherche */}
       <div className="relative mb-8 fade-up fade-up-3">
         <Search
           size={15}
