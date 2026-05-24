@@ -161,12 +161,7 @@ function PlayerRow({ player, dark, isMe, maxPts }) {
           )}
           <RankIcon rank={player.rank} />
         </div>
-        <p
-          className={`text-xs mt-0.5 ${dark ? "text-zinc-600" : "text-zinc-400"}`}
-        >
-          {player.total_predictions ?? player.pronostics ?? 0} pronostics ·{" "}
-          {player.success_rate ?? player.taux ?? 0}% de réussite
-        </p>
+       
       </div>
       <div className="flex items-center gap-3">
         <div className="w-24 hidden sm:block">
