@@ -42,7 +42,7 @@ function TeamBadge({ name, dark }) {
   );
 }
 
-// ✅ parse correctement le format "2026-05-01 20:45:00" du backend
+
 function parseDate(dateStr) {
   if (!dateStr) return new Date();
   // si déjà au format ISO avec T, on laisse tel quel
@@ -79,7 +79,7 @@ export default function MatchCard({ match, dark, index = 0 }) {
 
   const isFinished = status === "FINISHED";
   const isLive = status === "IN_PLAY";
-  // ✅ TIMED = matchs programmés côté football-data.org
+
   const isScheduled = status === "SCHEDULED" || status === "TIMED";
 
   return (
