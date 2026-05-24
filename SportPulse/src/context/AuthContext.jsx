@@ -13,7 +13,7 @@ export function AuthProvider({ children }) {
     });
 
     if (!res || !res.ok) {
-      const err = await res.json().catch(() => ({}));
+     const err = res ? await res.json().catch(() => ({})) : {};
       throw new Error(err.message || "Identifiants incorrects");
     }
 
